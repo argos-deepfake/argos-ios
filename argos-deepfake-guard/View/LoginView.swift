@@ -16,7 +16,7 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             if isLoggedIn {
-                MainView()
+                FakeGuardView()
             } else {
                 VStack(spacing: 16) {
                     Image("Argos-Main-Logo")
