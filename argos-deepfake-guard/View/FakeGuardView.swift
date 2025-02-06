@@ -40,7 +40,9 @@ struct FakeGuardView: View {
             Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
         }
         .onAppear {
-            checkPhotoStatus()
+            checkPhotoStatus { result in
+                self.isPhotoRegistered = result
+            }
         }
     }
     
@@ -149,123 +151,36 @@ struct FakeGuardView: View {
         }
     }
     
-    /// ✅ **로딩 화면**
-    var loadingView: some View {
-        VStack {
-            ProgressView("사진 정보를 불러오는 중...")
-                .progressViewStyle(CircularProgressViewStyle())
-                .scaleEffect(1.5)
-                .padding()
-        }
-    }
-    
-    /// ✅ 사진 등록 여부 확인
-    func checkPhotoStatus() {
-        guard let url = URL(string: "http://127.0.0.1:5001/api/users/check_photos") else { return }
-        
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            if let data = data,
-               let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let result = jsonResponse["result"] as? Bool {
-                DispatchQueue.main.async {
-                    self.isPhotoRegistered = result
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.isPhotoRegistered = false
-                }
-            }
-        }.resume()
-    }
     
     /// ✅ 4장 업로드 API 호출
     func uploadFourPhotos() {
-        guard let url = URL(string: "http://127.0.0.1:5001/api/users/upload_photo") else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        let boundary = UUID().uuidString
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
-        var body = Data()
-        for image in selectedImages {
-            if let imageData = image.jpegData(compressionQuality: 0.8) {
-                let fieldName = "file"  // ✅ 모든 파일을 동일한 "file" 필드로 전송
-                body.append("--\(boundary)\r\n".data(using: .utf8)!)
-                body.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"upload.jpg\"\r\n".data(using: .utf8)!)
-                body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-                body.append(imageData)
-                body.append("\r\n".data(using: .utf8)!)
+        isProcessing = true
+        argos_deepfake_guard.uploadFourPhotos(images: selectedImages) { success, message in
+            isProcessing = false
+            if success {
+                self.isPhotoRegistered = true
+            } else {
+                self.alertMessage = message ?? "업로드 실패"
+                self.showAlert = true
             }
         }
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-        request.httpBody = body
-        
-        URLSession.shared.uploadTask(with: request, from: body) { data, response, _ in
-            if let data = data, let response = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let successMessage = response["message"] as? String {
-                DispatchQueue.main.async {
-                    print("✅ 성공: \(successMessage)")
-                    self.isPhotoRegistered = true
-                }
-            } else {
-                DispatchQueue.main.async {
-                    print("❌ 업로드 실패")
-                }
-            }
-        }.resume()
     }
     
-    /// ✅ FakeGuard 실행
+    /// ✅ FakeGuard 실행 API 호출
     func uploadPhoto() {
-        guard let selectedImage = selectedImages.first,
-              let url = URL(string: "http://127.0.0.1:5001/api/users/fakeguard") else {
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        let boundary = UUID().uuidString
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        
-        var body = Data()
-        
-        if let imageData = selectedImage.jpegData(compressionQuality: 0.8) {
-            let fieldName = "file"
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"upload.jpg\"\r\n".data(using: .utf8)!)
-            body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-            body.append(imageData)
-            body.append("\r\n".data(using: .utf8)!)
-        }
-        
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
-        request.httpBody = body
-        
+        guard let selectedImage = selectedImages.first else { return }
         isProcessing = true
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            DispatchQueue.main.async {
-                self.isProcessing = false
-            }
-            
-            if let data = data,
-               let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let previewUrl = jsonResponse["preview_url"] as? String,
-               let imageUrl = URL(string: "http://127.0.0.1:5001\(previewUrl)") {
-                
-                if let imageData = try? Data(contentsOf: imageUrl), let resultImage = UIImage(data: imageData) {
-                    DispatchQueue.main.async {
-                        self.resultImage = resultImage
-                        self.navigateToResult = true
-                    }
-                }
+        
+        argos_deepfake_guard.uploadPhoto(image: selectedImage) { image, message in
+            isProcessing = false
+            if let resultImage = image {
+                self.resultImage = resultImage
+                self.navigateToResult = true
             } else {
-                DispatchQueue.main.async {
-                    self.errorMessage = "❌ FakeGuard 처리 중 오류 발생"
-                }
+                self.alertMessage = message ?? "오류 발생"
+                self.showAlert = true
             }
-        }.resume()
+        }
     }
 }
 
@@ -292,21 +207,21 @@ struct ImagePicker: UIViewControllerRepresentable {
     
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
         var parent: ImagePicker
-
+        
         init(_ parent: ImagePicker) {
             self.parent = parent
         }
-
+        
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             picker.dismiss(animated: true)
             
             // ✅ 기존 사진 초기화 후 새로운 사진 추가
             parent.images.removeAll()
-
+            
             for result in results {
                 result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in
                     guard let self = self else { return } // ✅ self를 약한 참조로 캡처
-
+                    
                     if let uiImage = image as? UIImage {
                         DispatchQueue.main.async {
                             self.parent.images.append(uiImage)
@@ -316,6 +231,4 @@ struct ImagePicker: UIViewControllerRepresentable {
             }
         }
     }
-
-
 }
