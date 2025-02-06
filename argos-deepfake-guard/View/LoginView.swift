@@ -14,40 +14,44 @@ struct LoginView: View {
     @State private var isLoggedIn = false
     
     var body: some View {
-        if isLoggedIn {
-            MainView()
-        } else {
-            VStack(spacing: 16) {
-                Image("Argos-Main-Logo")
-                    .resizable()
-                    .frame(width: 100, height: 100)
-                    .foregroundColor(.gray)
-                    .padding()
-                    
-                TextField("아이디", text: $username)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
-                    
-                SecureField("비밀번호", text: $password)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                Button(action: login) {
-                    Text("로그인")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
+        NavigationView {
+            if isLoggedIn {
+                MainView()
+            } else {
+                VStack(spacing: 16) {
+                    Image("Argos-Main-Logo")
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(.gray)
                         .padding()
-                        .background(Color.blue)
+                    
+                    TextField("아이디", text: $username)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                    
+                    SecureField("비밀번호", text: $password)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    
+                    Button(action: login) {
+                        Text("로그인")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                    }
+                }
+                .padding()
+                
+                NavigationLink(destination: SignupView()) {
+                    Text("아직 회원이 아니신가요? 회원가입하기")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
                         .cornerRadius(10)
                 }
             }
-            .padding()
-            
-            Text("아직 회원이 아니신가요? 회원가입하기")
-                .font(.subheadline)
-                .foregroundColor(.blue)
-                .cornerRadius(10)
         }
     }
     
