@@ -399,6 +399,7 @@
 				DEVELOPMENT_TEAM = TJTHYSLX5C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "아르고스";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "이 앱은 분석된 이미지를 저장하기 위해 갤러리에 접근합니다.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "이 앱은 사진을 업로드하기 위해 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -430,6 +431,7 @@
 				DEVELOPMENT_TEAM = TJTHYSLX5C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "아르고스";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "이 앱은 분석된 이미지를 저장하기 위해 갤러리에 접근합니다.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "이 앱은 사진을 업로드하기 위해 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
