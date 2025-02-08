@@ -11,7 +11,7 @@ import SwiftUI
 struct argos_deepfake_guardApp: App {
     var body: some Scene {
         WindowGroup {
-            LoginView()
+            SplashView()
         }
     }
 }
