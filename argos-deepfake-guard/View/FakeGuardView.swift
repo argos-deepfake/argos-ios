@@ -49,7 +49,7 @@ struct FakeGuardView: View {
     /// ✅ **사진이 등록된 경우의 뷰**
     var registeredPhotoView: some View {
         VStack(spacing: 20) {
-            Text("등록된 사진이 있습니다. 한 장을 업로드하세요.")
+            Text("✅방어 할 사진을 선택해 주세요✅")
                 .font(.title2)
                 .padding()
             
@@ -102,7 +102,7 @@ struct FakeGuardView: View {
     /// ✅ **사진이 등록되지 않은 경우 4장을 업로드하는 뷰**
     var uploadFourPhotosView: some View {
         VStack(spacing: 20) {
-            Text("📌 FakeGuard를 사용하려면\n4장의 사진을 먼저 등록하세요.")
+            Text("📌 4장의 사진을 먼저 등록하세요. 📌")
                 .font(.title2)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.red)
